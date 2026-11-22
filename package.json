@@ -1,0 +1,16 @@
+{
+  "name": "bug-whisperer-studio",
+  "version": "1.0.0",
+  "description": "Codebase Debug & Diagnostics Studio powered by bug-whisperer",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "bug-whisperer": "^1.0.0",
+    "express": "^4.22.3",
+    "ws": "^8.23.0"
+  }
+}

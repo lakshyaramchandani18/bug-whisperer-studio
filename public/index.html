@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bug Whisperer Studio - Codebase Diagnostics & Testing</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐛</text></svg>">
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand-section">
+      <div class="logo-badge">🐛</div>
+      <div>
+        <div class="brand-title">
+          Bug Whisperer Studio
+          <span style="font-size: 11px; background: rgba(6, 182, 212, 0.15); color: var(--accent-cyan); padding: 2px 6px; border-radius: 4px; font-weight: 500;">v1.0.0</span>
+        </div>
+        <div class="brand-subtitle">Codebase Diagnostics & Developer Assistant</div>
+      </div>
+    </div>
+
+    <!-- Active Codebase Indicator -->
+    <div class="header-center">
+      <div class="codebase-pill" id="btn-open-codebase-modal" title="Click to switch codebase directory">
+        <span class="label">Target Codebase:</span>
+        <span class="path-val" id="header-codebase-path">Loading...</span>
+        <span style="font-size: 12px; color: var(--text-dim);">📂 ▾</span>
+      </div>
+    </div>
+
+    <!-- Right Controls: Package Status & Personality -->
+    <div class="header-actions">
+      <div class="package-badge" title="Directly linked to local npm package">
+        <span class="pulse-dot"></span>
+        <span id="package-badge-text">bug-whisperer (Local)</span>
+      </div>
+
+      <div class="personality-selector-group" title="Set AI/Mentor Commentary Voice">
+        <span style="color: var(--text-dim); font-size: 11px;">🎭 Voice:</span>
+        <select class="personality-select" id="personality-select">
+          <option value="friendly">Friendly</option>
+          <option value="professional">Professional</option>
+          <option value="funny">Funny</option>
+          <option value="strict">Strict Mentor</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="app-container">
+
+    <!-- Left Sidebar: Project Info, Scripts & Files -->
+    <aside class="sidebar">
+
+      <!-- Active Project Info -->
+      <div class="sidebar-section">
+        <div class="section-header">
+          <span>Project Workspace</span>
+          <button class="btn-icon-xs" id="btn-refresh-info" title="Refresh Project Info">🔄</button>
+        </div>
+        <div class="project-card">
+          <div class="project-card-title">
+            <span id="proj-name">Loading...</span>
+            <span class="project-card-ver" id="proj-version">1.0.0</span>
+          </div>
+          <div class="project-card-desc" id="proj-desc">Codebase under inspection</div>
+        </div>
+      </div>
+
+      <!-- Detected Scripts Runner -->
+      <div class="sidebar-section">
+        <div class="section-header">
+          <span>Detected Scripts</span>
+        </div>
+        <div class="scripts-grid" id="scripts-list">
+          <div style="font-size: 11px; color: var(--text-dim);">Scanning scripts...</div>
+        </div>
+      </div>
+
+      <!-- File & Log Explorer -->
+      <div class="sidebar-section" style="flex: 1; display: flex; flex-direction: column;">
+        <div class="section-header">
+          <span>Files & Logs</span>
+          <span style="font-size: 10px; color: var(--text-dim);" id="file-count-label">0 items</span>
+        </div>
+        <div class="file-tree-container" id="file-tree-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Center Main Content -->
+    <main class="main-content">
+
+      <!-- Tab Navigation Bar -->
+      <nav class="tab-bar">
+        <button class="tab-btn active" data-tab="tab-runner">
+          ⚡ Runner & Diagnostics
+        </button>
+        <button class="tab-btn" data-tab="tab-viewer">
+          📄 Code & Log Viewer
+        </button>
+        <button class="tab-btn" data-tab="tab-scanner">
+          🔍 Codebase Scanner
+          <span class="tab-badge" id="scanner-badge" style="display: none;">0</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-sandbox">
+          🧪 Error Sandbox
+        </button>
+        <button class="tab-btn" data-tab="tab-rules">
+          🧩 Rules Engine (<span id="rules-count-tab">16</span>)
+        </button>
+      </nav>
+
+      <!-- TAB 1: Runner & Diagnostics Console -->
+      <div class="tab-content active" id="tab-runner">
+
+        <!-- Command Toolbar -->
+        <div class="runner-toolbar">
+          <div class="runner-input-group">
+            <span class="prompt-prefix">❯</span>
+            <input type="text" class="cmd-input" id="cmd-input" placeholder="Enter command to run (e.g. npm test, node auth-service.js)..." value="npm test">
+          </div>
+          <button class="btn-run" id="btn-run-cmd">
+            <span>▶</span> Run Command
+          </button>
+          <button class="btn-danger" id="btn-stop-cmd" style="display: none;">
+            <span>■</span> Stop
+          </button>
+          <button class="btn-secondary" id="btn-clear-term" title="Clear Terminal">
+            Clear
+          </button>
+        </div>
+
+        <!-- Terminal & Diagnosis Split View -->
+        <div class="terminal-split-view">
+
+          <!-- Terminal Pane -->
+          <div class="terminal-pane" id="terminal-output">
+<span style="color: #64748b;">// Welcome to Bug Whisperer Studio Console
+// Select any npm script from the sidebar or type a command above.
+// If an unhandled error or exception occurs, Bug Whisperer will automatically
+// intercept it and present a comprehensive diagnosis, fixes, and diffs below!</span>
+          </div>
+
+          <!-- Bug Whisperer Diagnosis Drawer (Dynamic) -->
+          <div class="diagnosis-container" id="diagnosis-container" style="display: none;">
+
+            <!-- Header -->
+            <div class="diagnosis-header">
+              <div class="diag-title-group">
+                <span style="font-size: 18px;">🐛</span>
+                <div>
+                  <div class="diag-error-title" id="diag-error-name">TypeError: Cannot read properties of undefined</div>
+                  <div style="font-size: 11px; color: var(--text-dim);" id="diag-rule-meta">Rule ID: typeerror-null-undefined • Matched via Deterministic Rule Engine</div>
+                </div>
+                <span class="severity-chip severity-high" id="diag-severity">HIGH</span>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div class="confidence-meter">
+                  <span>Confidence:</span>
+                  <strong style="color: #34d399;" id="diag-confidence">98%</strong>
+                </div>
+                <button class="btn-secondary" id="btn-copy-report" style="padding: 4px 8px; font-size: 11px;">
+                  📋 Copy Markdown Report
+                </button>
+                <button class="btn-icon-xs" id="btn-close-diag" style="font-size: 16px;">✕</button>
+              </div>
+            </div>
+
+            <!-- Body Details -->
+            <div class="diagnosis-body">
+
+              <!-- Personality Quote Box -->
+              <div class="personality-quote-box" id="personality-box">
+                <div class="quote-avatar">🎭</div>
+                <div class="quote-content">
+                  <div class="quote-author" id="quote-author">Friendly Mentor</div>
+                  <div id="quote-text">"Oops! Your code tried to read a property on a variable that doesn't hold an object yet. Let's fix this together!"</div>
+                </div>
+              </div>
+
+              <!-- Explanation & Why It Happens -->
+              <div class="diag-grid">
+                <div class="diag-card">
+                  <div class="diag-card-title">📖 Plain-English Explanation</div>
+                  <div class="diag-explanation" id="diag-explanation">
+                    Your code tried to read a property on a value that is undefined.
+                  </div>
+                  <div class="diag-why" id="diag-why">
+                    <strong>Technical Root Cause:</strong> In JavaScript, accessing properties on null or undefined triggers a runtime exception because primitive primitives lack object prototypes.
+                  </div>
+                </div>
+
+                <div class="diag-card">
+                  <div class="diag-card-title">🔍 Code Location Detected</div>
+                  <div id="diag-location-box" style="font-size: 12px; font-family: var(--font-mono); color: var(--accent-cyan); margin-bottom: 8px;">
+                    File: <span id="diag-file-path">auth-service.js:8:15</span>
+                  </div>
+                  <button class="btn-secondary" id="btn-jump-code" style="font-size: 11px; width: 100%;">
+                    📂 Jump to Code in Viewer
+                  </button>
+                </div>
+              </div>
+
+              <!-- Visual Code Diff -->
+              <div class="diff-container" id="diff-container">
+                <div class="diff-header">
+                  <span>Recommended Fix (Before & After)</span>
+                  <span style="font-size: 10px; color: var(--accent-emerald);">Automated Suggestion</span>
+                </div>
+                <div class="diff-content">
+                  <div class="diff-column diff-before">
+                    <h5>❌ Buggy Code</h5>
+                    <pre class="diff-code" id="diff-before-code">// Buggy line</pre>
+                  </div>
+                  <div class="diff-column diff-after">
+                    <h5>✅ Corrected Code</h5>
+                    <pre class="diff-code" id="diff-after-code">// Fixed line with optional chaining</pre>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actionable Solutions & Checklist Grid -->
+              <div class="diag-grid">
+                <!-- Solutions -->
+                <div class="diag-card">
+                  <div class="diag-card-title">💡 Actionable Solutions</div>
+                  <ul id="diag-solutions-list" style="padding-left: 18px; font-size: 13px; line-height: 1.6;">
+                    <!-- Solutions injected here -->
+                  </ul>
+                </div>
+
+                <!-- Interactive Checklist -->
+                <div class="diag-card">
+                  <div class="diag-card-title">
+                    <span>✅ Verification Checklist</span>
+                    <span style="font-size: 10px; color: var(--text-dim);" id="checklist-progress">0/3</span>
+                  </div>
+                  <div class="checklist-items" id="diag-checklist">
+                    <!-- Checkboxes injected here -->
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- TAB 2: Code & Log Viewer -->
+      <div class="tab-content" id="tab-viewer">
+        <div class="file-viewer-header">
+          <div>
+            <span style="color: var(--text-dim);">Inspecting:</span>
+            <strong id="viewer-file-path" style="font-family: var(--font-mono); color: var(--accent-cyan); margin-left: 6px;">No file selected</strong>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-secondary" id="btn-analyze-file-content" style="font-size: 11px;">
+              🐛 Analyze with Bug Whisperer
+            </button>
+          </div>
+        </div>
+        <div class="file-code-area" id="file-code-display">
+          <div style="color: var(--text-dim); padding: 20px;">Select a file from the sidebar to inspect its code and line numbers.</div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Codebase Scanner -->
+      <div class="tab-content" id="tab-scanner">
+        <div class="scanner-container">
+          <div class="scanner-hero">
+            <div>
+              <h3>Codebase & Log Health Scanner</h3>
+              <p>Recursively audits files and log records in the selected codebase for crash traces, unhandled promises, and syntax hazards.</p>
+            </div>
+            <button class="btn-run" id="btn-run-scan" style="padding: 10px 18px; font-size: 13px;">
+              <span>🔍</span> Start Codebase Audit
+            </button>
+          </div>
+
+          <div class="section-header">
+            <span>Audit Findings</span>
+            <span id="scan-summary-label" style="font-size: 12px; color: var(--text-dim);">No scan performed yet</span>
+          </div>
+
+          <div class="scanner-results-list" id="scanner-results">
+            <div style="text-align: center; color: var(--text-dim); padding: 40px;">
+              Click "Start Codebase Audit" above to scan project logs and JavaScript code.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Manual Error Sandbox -->
+      <div class="tab-content" id="tab-sandbox">
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px; height: 100%; overflow-y: auto;">
+          <div>
+            <h3>Error Diagnosis Sandbox</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Paste any JavaScript error, Node.js crash log, or stack trace below to test Bug Whisperer instantly.</p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <textarea id="sandbox-input" style="width: 100%; height: 140px; background-color: #030712; border: 1px solid var(--border-color); border-radius: 8px; color: #f8fafc; font-family: var(--font-mono); font-size: 13px; padding: 12px; outline: none;" placeholder="Paste raw error message or stack trace here...
+Example:
+TypeError: Cannot read properties of undefined (reading 'token')
+    at authenticateUser (/app/auth.js:12:20)"></textarea>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; gap: 8px;">
+                <button class="preset-pill" onclick="document.getElementById('sandbox-input').value = `TypeError: Cannot read properties of undefined (reading 'token')\n    at authenticateUser (/Users/project/auth.js:12:15)`">Sample TypeError</button>
+                <button class="preset-pill" onclick="document.getElementById('sandbox-input').value = `ReferenceError: fetchConfig is not defined\n    at loadSettings (/Users/project/app.js:45:9)`">Sample ReferenceError</button>
+                <button class="preset-pill" onclick="document.getElementById('sandbox-input').value = `Error: connect ECONNREFUSED 127.0.0.1:5432\n    at TCPConnectWrap.afterConnect (node:net:1605:16)`">Sample Connection</button>
+              </div>
+              <button class="btn-run" id="btn-sandbox-analyze">
+                <span>🐛</span> Explain Error
+              </button>
+            </div>
+          </div>
+
+          <div id="sandbox-result" style="display: none; flex-direction: column; gap: 14px; margin-top: 10px;">
+            <!-- Output injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: Rules Engine -->
+      <div class="tab-content" id="tab-rules">
+        <div style="padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3>Bug Whisperer Knowledge Base Rules</h3>
+              <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Deterministic rules recognized with 99% precision, zero cloud latency.</p>
+            </div>
+            <button class="btn-secondary" id="btn-add-rule-modal">
+              ➕ Add Custom Rule
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px;" id="rules-grid">
+            <!-- Rules cards injected by JS -->
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- MODAL: Codebase Selector -->
+  <div class="modal-overlay" id="codebase-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <span class="modal-title">Select Target Codebase</span>
+        <button class="btn-icon-xs" id="btn-close-codebase-modal" style="font-size: 16px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <label style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 6px; display: block;">Quick Presets</label>
+          <div class="preset-pills">
+            <button class="preset-pill" id="preset-sample-app">🧪 Sample Buggy App</button>
+            <button class="preset-pill" id="preset-npm-pkg">📦 NPM Package Folder</button>
+            <button class="preset-pill" id="preset-workspace">🏠 Current Workspace</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 6px; display: block;">Directory Path</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="modal-path-input" style="flex: 1; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); font-family: var(--font-mono); font-size: 12px; padding: 8px 12px; border-radius: 6px; outline: none;">
+            <button class="btn-secondary" id="btn-browse-dir">Browse</button>
+          </div>
+        </div>
+
+        <div>
+          <label style="font-size: 11px; text-transform: uppercase; color: var(--text-dim); font-weight: 700; margin-bottom: 6px; display: block;">Directory Contents</label>
+          <div class="browser-list" id="browser-items">
+            <div style="padding: 10px; color: var(--text-dim); font-size: 12px;">Click browse to explore subdirectories...</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-codebase-modal">Cancel</button>
+        <button class="btn-run" id="btn-confirm-codebase">Select & Load Codebase</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Add Custom Rule -->
+  <div class="modal-overlay" id="rule-modal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <span class="modal-title">Register Custom Error Rule</span>
+        <button class="btn-icon-xs" id="btn-close-rule-modal" style="font-size: 16px;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <input type="text" id="new-rule-id" placeholder="Rule ID (e.g. database-timeout)" style="background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 6px; font-size: 12px;">
+          <input type="text" id="new-rule-name" placeholder="Rule Name (e.g. Database Connection Timeout)" style="background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 6px; font-size: 12px;">
+          <input type="text" id="new-rule-pattern" placeholder="Regex Pattern (e.g. database connection timed out)" style="background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 6px; font-size: 12px; font-family: var(--font-mono);">
+          <textarea id="new-rule-explanation" placeholder="Plain English Explanation of what happened..." style="background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 6px; font-size: 12px; height: 60px;"></textarea>
+          <input type="text" id="new-rule-solution" placeholder="Suggested Solution" style="background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px; border-radius: 6px; font-size: 12px;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-rule-modal">Cancel</button>
+        <button class="btn-run" id="btn-confirm-rule">Save Rule</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "sample-buggy-project",
+  "version": "1.0.0",
+  "description": "Sample target codebase for Bug Whisperer Studio diagnostics",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test/sample.test.js",
+    "bug:typeerror": "node auth-service.js",
+    "bug:reference": "node user-profile.js",
+    "bug:constant": "node config.js"
+  }
+}

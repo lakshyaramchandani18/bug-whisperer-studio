@@ -1,0 +1,9 @@
+[2026-11-22T21:40:12.451Z] INFO: Server initialized on port 8080
+[2026-11-22T21:40:14.200Z] ERROR: Unhandled rejection during user request
+TypeError: Cannot read properties of undefined (reading 'session')
+    at handleRequest (/Users/lakshyaramchandani/application_projnpm/sample-codebase/server.js:42:21)
+    at Layer.handle [as handle_request] (/Users/lakshyaramchandani/application_projnpm/node_modules/express/lib/router/layer.js:95:5)
+    at next (/Users/lakshyaramchandani/application_projnpm/node_modules/express/lib/router/route.js:144:13)
+[2026-11-22T21:41:03.112Z] ERROR: Failed database ping
+Error: connect ECONNREFUSED 127.0.0.1:5432
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1605:16)
